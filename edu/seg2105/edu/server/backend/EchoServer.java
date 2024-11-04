@@ -1,35 +1,33 @@
 package edu.seg2105.edu.server.backend;
-// This file contains material supporting section 3.7 of the textbook:
-// "Object Oriented Software Engineering" and is issued under the open-source
-// license found at www.lloseng.com 
+// 本文件包含支持教科书第3.7节的材料：
+// "面向对象的软件工程"，并根据www.lloseng.com上的开源许可证发布
 
 
 import ocsf.server.*;
 
 /**
- * This class overrides some of the methods in the abstract 
- * superclass in order to give more functionality to the server.
+ * 这个类重写了抽象超类中的一些方法，以便为服务器提供更多功能。
  *
- * @author Dr Timothy C. Lethbridge
- * @author Dr Robert Lagani&egrave;re
- * @author Fran&ccedil;ois B&eacute;langer
- * @author Paul Holden
+ * @作者 Dr Timothy C. Lethbridge
+ * @作者 Dr Robert Lagani&egrave;re
+ * @作者 Fran&ccedil;ois B&eacute;langer
+ * @作者 Paul Holden
  */
 public class EchoServer extends AbstractServer 
 {
-  //Class variables *************************************************
+  //类变量 *************************************************
   
   /**
-   * The default port to listen on.
+   * 默认监听端口。
    */
   final public static int DEFAULT_PORT = 5555;
   
-  //Constructors ****************************************************
+  //构造函数 ****************************************************
   
   /**
-   * Constructs an instance of the echo server.
+   * 构造一个回声服务器实例。
    *
-   * @param port The port number to connect on.
+   * @param port 要连接的端口号。
    */
   public EchoServer(int port) 
   {
@@ -37,74 +35,70 @@ public class EchoServer extends AbstractServer
   }
 
   
-  //Instance methods ************************************************
+  //实例方法 ************************************************
   
   /**
-   * This method handles any messages received from the client.
+   * 这个方法处理从客户端收到的任何消息。
    *
-   * @param msg The message received from the client.
-   * @param client The connection from which the message originated.
+   * @param msg 从客户端收到的消息。
+   * @param client 消息来源的连接。
    */
   public void handleMessageFromClient
     (Object msg, ConnectionToClient client)
   {
-    System.out.println("Message received: " + msg + " from " + client);
+    System.out.println("收到消息: " + msg + " 来自 " + client);
     this.sendToAllClients(msg);
   }
     
   /**
-   * This method overrides the one in the superclass.  Called
-   * when the server starts listening for connections.
+   * 这个方法重写了超类中的方法。当服务器开始监听连接时调用。
    */
   protected void serverStarted()
   {
     System.out.println
-      ("Server listening for connections on port " + getPort());
+      ("服务器正在监听端口 " + getPort() + " 上的连接。");
   }
   
   /**
-   * This method overrides the one in the superclass.  Called
-   * when the server stops listening for connections.
+   * 这个方法重写了超类中的方法。当服务器停止监听连接时调用。
    */
   protected void serverStopped()
   {
     System.out.println
-      ("Server has stopped listening for connections.");
+      ("服务器已停止监听连接。");
   }
   
   
-  //Class methods ***************************************************
+  //类方法 ***************************************************
   
-  /**
-   * This method is responsible for the creation of 
-   * the server instance (there is no UI in this phase).
+  /*
+   * 这个方法负责创建服务器实例（此阶段没有用户界面）。
    *
-   * @param args[0] The port number to listen on.  Defaults to 5555 
-   *          if no argument is entered.
+   * @param args[0] 要监听的端口号。如果没有输入参数，则默认为5555。
    */
   public static void main(String[] args) 
   {
-    int port = 0; //Port to listen on
+    int port = 0; //监听的端口
 
     try
     {
-      port = Integer.parseInt(args[0]); //Get port from command line
+      port = Integer.parseInt(args[0]); //从命令行获取端口
     }
     catch(Throwable t)
     {
-      port = DEFAULT_PORT; //Set port to 5555
+      port = DEFAULT_PORT; //设置端口为5555
     }
-	
+  
     EchoServer sv = new EchoServer(port);
     
     try 
     {
-      sv.listen(); //Start listening for connections
+      sv.listen(); //开始监听连接
     } 
     catch (Exception ex) 
     {
-      System.out.println("ERROR - Could not listen for clients!");
+      System.out.println("错误 - 无法监听客户端！");
     }
   }
 }
-//End of EchoServer class
+// EchoServer类结束

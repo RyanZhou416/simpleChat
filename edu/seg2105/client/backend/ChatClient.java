@@ -1,6 +1,5 @@
-// This file contains material supporting section 3.7 of the textbook:
-// "Object Oriented Software Engineering" and is issued under the open-source
-// license found at www.lloseng.com 
+// 本文件包含支持教科书第3.7节的材料：
+// "面向对象软件工程"，并根据www.lloseng.com上的开源许可证发布
 
 package edu.seg2105.client.backend;
 
@@ -11,8 +10,7 @@ import java.io.*;
 import edu.seg2105.client.common.*;
 
 /**
- * This class overrides some of the methods defined in the abstract
- * superclass in order to give more functionality to the client.
+ * 这个类重写了抽象超类中定义的一些方法，以便为客户端提供更多功能。
  *
  * @author Dr Timothy C. Lethbridge
  * @author Dr Robert Lagani&egrave;
@@ -20,40 +18,39 @@ import edu.seg2105.client.common.*;
  */
 public class ChatClient extends AbstractClient
 {
-  //Instance variables **********************************************
+  //实例变量 **********************************************
   
   /**
-   * The interface type variable.  It allows the implementation of 
-   * the display method in the client.
+   * 接口类型变量。它允许在客户端中实现display方法。
    */
   ChatIF clientUI; 
 
   
-  //Constructors ****************************************************
+  //构造函数 ****************************************************
   
   /**
-   * Constructs an instance of the chat client.
+   * 构造一个聊天客户端实例。
    *
-   * @param host The server to connect to.
-   * @param port The port number to connect on.
-   * @param clientUI The interface type variable.
+   * @param host 要连接的服务器。
+   * @param port 要连接的端口号。
+   * @param clientUI 接口类型变量。
    */
   
   public ChatClient(String host, int port, ChatIF clientUI) 
     throws IOException 
   {
-    super(host, port); //Call the superclass constructor
+    super(host, port); //调用超类构造函数
     this.clientUI = clientUI;
     openConnection();
   }
 
   
-  //Instance methods ************************************************
+  //实例方法 ************************************************
     
   /**
-   * This method handles all data that comes in from the server.
+   * 这个方法处理从服务器传入的所有数据。
    *
-   * @param msg The message from the server.
+   * @param msg 来自服务器的消息。
    */
   public void handleMessageFromServer(Object msg) 
   {
@@ -63,9 +60,9 @@ public class ChatClient extends AbstractClient
   }
 
   /**
-   * This method handles all data coming from the UI            
+   * 这个方法处理来自UI的所有数据            
    *
-   * @param message The message from the UI.    
+   * @param message 来自UI的消息。    
    */
   public void handleMessageFromClientUI(String message)
   {
@@ -76,13 +73,13 @@ public class ChatClient extends AbstractClient
     catch(IOException e)
     {
       clientUI.display
-        ("Could not send message to server.  Terminating client.");
+        ("无法发送消息到服务器。终止客户端。");
       quit();
     }
   }
   
   /**
-   * This method terminates the client.
+   * 这个方法终止客户端。
    */
   public void quit()
   {
@@ -94,4 +91,4 @@ public class ChatClient extends AbstractClient
     System.exit(0);
   }
 }
-//End of ChatClient class
+// ChatClient类结束
