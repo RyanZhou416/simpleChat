@@ -25,7 +25,7 @@ public class EchoServer extends AbstractServer {
     /**
      * The default port to listen on.
      */
-    final public static int DEFAULT_PORT = 1269;
+    final public static int DEFAULT_PORT = 5555;
 
     //Constructors ****************************************************
 
