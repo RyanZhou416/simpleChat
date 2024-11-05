@@ -1,104 +1,187 @@
 package edu.seg2105.edu.server.backend;
-// 本文件包含支持教科书第3.7节的材料：
-// "面向对象的软件工程"，并根据www.lloseng.com上的开源许可证发布
+// This file contains material supporting section 3.7 of the textbook:
+// "Object Oriented Software Engineering" and is issued under the open-source
+// license found at www.lloseng.com
 
 
-import ocsf.server.*;
+import edu.seg2105.edu.server.ui.ServerConsole;
+import ocsf.server.AbstractServer;
+import ocsf.server.ConnectionToClient;
+
+import java.io.IOException;
 
 /**
- * 这个类重写了抽象超类中的一些方法，以便为服务器提供更多功能。
+ * This class overrides some of the methods in the abstract
+ * superclass in order to give more functionality to the server.
  *
- * @作者 Dr Timothy C. Lethbridge
- * @作者 Dr Robert Lagani&egrave;re
- * @作者 Fran&ccedil;ois B&eacute;langer
- * @作者 Paul Holden
+ * @author Dr Timothy C. Lethbridge
+ * @author Dr Robert Lagani&egrave;re
+ * @author Fran&ccedil;ois B&eacute;langer
+ * @author Paul Holden
  */
-public class EchoServer extends AbstractServer 
-{
-  //类变量 *************************************************
-  
-  /**
-   * 默认监听端口。
-   */
-  final public static int DEFAULT_PORT = 5555;
-  
-  //构造函数 ****************************************************
-  
-  /**
-   * 构造一个回声服务器实例。
-   *
-   * @param port 要连接的端口号。
-   */
-  public EchoServer(int port) 
-  {
-    super(port);
-  }
+public class EchoServer extends AbstractServer {
+    //Class variables *************************************************
 
-  
-  //实例方法 ************************************************
-  
-  /**
-   * 这个方法处理从客户端收到的任何消息。
-   *
-   * @param msg 从客户端收到的消息。
-   * @param client 消息来源的连接。
-   */
-  public void handleMessageFromClient
-    (Object msg, ConnectionToClient client)
-  {
-    System.out.println("收到消息: " + msg + " 来自 " + client);
-    this.sendToAllClients(msg);
-  }
-    
-  /**
-   * 这个方法重写了超类中的方法。当服务器开始监听连接时调用。
-   */
-  protected void serverStarted()
-  {
-    System.out.println
-      ("服务器正在监听端口 " + getPort() + " 上的连接。");
-  }
-  
-  /**
-   * 这个方法重写了超类中的方法。当服务器停止监听连接时调用。
-   */
-  protected void serverStopped()
-  {
-    System.out.println
-      ("服务器已停止监听连接。");
-  }
-  
-  
-  //类方法 ***************************************************
-  
-  /*
-   * 这个方法负责创建服务器实例（此阶段没有用户界面）。
-   *
-   * @param args[0] 要监听的端口号。如果没有输入参数，则默认为5555。
-   */
-  public static void main(String[] args) 
-  {
-    int port = 0; //监听的端口
+    /**
+     * The default port to listen on.
+     */
+    final public static int DEFAULT_PORT = 5555;
 
-    try
-    {
-      port = Integer.parseInt(args[0]); //从命令行获取端口
+    //Constructors ****************************************************
+
+    /**
+     * Constructs an instance of the echo server.
+     *
+     * @param port The port number to connect on.
+     */
+    public EchoServer(int port) {
+        super(port);
     }
-    catch(Throwable t)
-    {
-      port = DEFAULT_PORT; //设置端口为5555
+
+
+    //Instance methods ************************************************
+
+    /**
+     * This method handles any messages received from the client.
+     *
+     * @param msg The message received from the client.
+     * @param client The connection from which the message originated.
+     */
+    public void handleMessageFromClient
+    (Object msg, ConnectionToClient client) {
+        if (msg.toString().startsWith("#login")) {
+            if(client.getInfo("loginID") != null){
+                try {
+                    client.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }else{
+            client.setInfo("loginID", msg.toString().substring(7));}
+        } else {
+            System.out.println("Message received: " + msg + " from " + client);
+            this.sendToAllClients(msg);
+        }
     }
-  
-    EchoServer sv = new EchoServer(port);
-    
-    try 
-    {
-      sv.listen(); //开始监听连接
-    } 
-    catch (Exception ex) 
-    {
-      System.out.println("错误 - 无法监听客户端！");
+
+    /**
+     * This method overrides the one in the superclass.  Called
+     * when the server starts listening for connections.
+     */
+    protected void serverStarted() {
+        System.out.println
+                ("Server listening for connections on port " + getPort());
     }
-  }
+
+    /**
+     * This method overrides the one in the superclass.  Called
+     * when the server stops listening for connections.
+     */
+    protected void serverStopped() {
+        System.out.println
+                ("Server has stopped listening for connections.");
+    }
+
+    protected void clientConnected(ConnectionToClient client) {
+        System.out.println("Client connected: " + client.getInfo("loginID"));
+    }
+
+    protected void clientDisconnected(
+            ConnectionToClient client) {
+        System.out.println("Client disconnected: " + client.getInfo("loginID"));
+    }
+
+    //Class methods ***************************************************
+
+    /**
+     * This method is responsible for the creation of
+     * the server instance (there is no UI in this phase).
+     *
+     * @param args The port number to listen on.  Defaults to 5555
+     *          if no argument is entered.
+     */
+    public static void main(String[] args) {
+        int port = 0;
+
+        try {
+            port = Integer.parseInt(args[0]);
+        } catch (Throwable t) {
+            port = DEFAULT_PORT;
+        }
+
+        new ServerConsole(port);
+
+
+    }
+
+    public void handleMessageFromServerConsole(String message) {
+        if (message.startsWith("#")) {
+            handleCommand(message);
+        } else {
+            sendToAllClients("SERVER MSG>" + message);
+            System.out.println("SERVER MSG> " + message);
+        }
+    }
+
+    private void handleCommand(String message) {
+        String[] parts = message.split(" ", 2);
+        String command = parts[0];
+        String argument = (parts.length > 1) ? parts[1] : null;
+
+        switch (command) {
+            case "#quit":
+                try {
+                    close();
+                } catch (IOException ignored) {
+                }
+                System.exit(0);
+                break;
+
+            case "#stop":
+                stopListening();
+                break;
+
+            case "#close":
+                try {
+                    close();
+                } catch (IOException e) {
+                    System.out.println("无法关闭服务器。");
+                }
+                break;
+
+            case "#setport":
+                if (argument != null) {
+                    try {
+                        int port = Integer.parseInt(argument); // 尝试将参数解析为整数
+                        setPort(port);
+                    } catch (NumberFormatException e) {
+                        System.out.println("错误：端口号必须是一个整数。");
+                    }
+                } else {
+                    System.out.println("错误：缺少端口号参数。");
+                }
+                break;
+
+            case "#start":
+                if (!isListening()) {
+                    try {
+                        listen();
+                    } catch (IOException e) {
+                        System.out.println("无法开始监听。");
+                    }
+                } else {
+                    System.out.println("服务器已经在监听。");
+                }
+                break;
+
+            case "#getport":
+                System.out.println("当前端口号：" + getPort());
+                break;
+
+            default:
+                System.out.println("无效的命令：" + command);
+                break;
+        }
+    }
 }
-// EchoServer类结束
+

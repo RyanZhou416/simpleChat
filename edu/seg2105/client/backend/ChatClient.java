@@ -1,94 +1,169 @@
-// 本文件包含支持教科书第3.7节的材料：
-// "面向对象软件工程"，并根据www.lloseng.com上的开源许可证发布
+// This file contains material supporting section 3.7 of the textbook:
+// "Object Oriented Software Engineering" and is issued under the open-source
+// license found at www.lloseng.com
 
 package edu.seg2105.client.backend;
 
-import ocsf.client.*;
+import edu.seg2105.client.common.ChatIF;
+import ocsf.client.AbstractClient;
 
-import java.io.*;
-
-import edu.seg2105.client.common.*;
+import java.io.IOException;
 
 /**
- * 这个类重写了抽象超类中定义的一些方法，以便为客户端提供更多功能。
+ * This class overrides some of the methods defined in the abstract
+ * superclass in order to give more functionality to the client.
  *
  * @author Dr Timothy C. Lethbridge
  * @author Dr Robert Lagani&egrave;
  * @author Fran&ccedil;ois B&eacute;langer
  */
-public class ChatClient extends AbstractClient
-{
-  //实例变量 **********************************************
-  
-  /**
-   * 接口类型变量。它允许在客户端中实现display方法。
-   */
-  ChatIF clientUI; 
+public class ChatClient extends AbstractClient {
+    //Instance variables **********************************************
+    String loginID;
+    /**
+     * The interface type variable.  It allows the implementation of
+     * the display method in the client.
+     */
+    ChatIF clientUI;
 
-  
-  //构造函数 ****************************************************
-  
-  /**
-   * 构造一个聊天客户端实例。
-   *
-   * @param host 要连接的服务器。
-   * @param port 要连接的端口号。
-   * @param clientUI 接口类型变量。
-   */
-  
-  public ChatClient(String host, int port, ChatIF clientUI) 
-    throws IOException 
-  {
-    super(host, port); //调用超类构造函数
-    this.clientUI = clientUI;
-    openConnection();
-  }
 
-  
-  //实例方法 ************************************************
-    
-  /**
-   * 这个方法处理从服务器传入的所有数据。
-   *
-   * @param msg 来自服务器的消息。
-   */
-  public void handleMessageFromServer(Object msg) 
-  {
-    clientUI.display(msg.toString());
-    
-    
-  }
+    //Constructors ****************************************************
 
-  /**
-   * 这个方法处理来自UI的所有数据            
-   *
-   * @param message 来自UI的消息。    
-   */
-  public void handleMessageFromClientUI(String message)
-  {
-    try
-    {
-      sendToServer(message);
+    /**
+     * Constructs an instance of the chat client.
+     *
+     * @param host The server to connect to.
+     * @param port The port number to connect on.
+     * @param clientUI The interface type variable.
+     */
+
+    public ChatClient(String host, int port, ChatIF clientUI, String loginID)
+            throws IOException {
+
+        super(host, port);
+        this.loginID=loginID;
+        this.clientUI = clientUI;
+        openConnection();
+        sendToServer("#login " + loginID);
+
     }
-    catch(IOException e)
-    {
-      clientUI.display
-        ("无法发送消息到服务器。终止客户端。");
-      quit();
+
+
+    //Instance methods ************************************************
+
+    /**
+     * This method handles all data that comes in from the server.
+     *
+     * @param msg The message from the server.
+     */
+    public void handleMessageFromServer(Object msg) {
+        clientUI.display(msg.toString());
+
+
     }
-  }
-  
-  /**
-   * 这个方法终止客户端。
-   */
-  public void quit()
-  {
-    try
-    {
-      closeConnection();
+
+    /**
+     * This method handles all data coming from the UI
+     *
+     * @param message The message from the UI.
+     */
+    public void handleMessageFromClientUI(String message) {
+        try {
+            if (message.startsWith("#")) {
+                handleCommand(message);
+            } else {
+                sendToServer(message);
+            }
+        } catch (IOException e) {
+            clientUI.display
+                    ("Could not send message to server.  Terminating client.");
+            quit();
+        }
     }
-    catch(IOException e) {}
-    System.exit(0);
-  }
+
+    private void handleCommand(String message) {
+        String[] parts = message.split(" ", 2);
+        String command = parts[0];
+        String argument = (parts.length > 1) ? parts[1] : null;
+
+        switch (command) {
+            case "#quit":
+                quit();
+                break;
+
+            case "#logoff":
+                try {
+                    closeConnection();
+                } catch (IOException ignored) {
+                }
+                break;
+
+            case "#sethost":
+                if (argument != null) {
+                    setHost(argument);
+                } else {
+                    System.out.println("No host provided.");
+                }
+                break;
+
+            case "#setport":
+                if (argument != null) {
+                    try {
+                        int port = Integer.parseInt(argument);
+                        setPort(port);
+                    } catch (NumberFormatException e) {
+                        System.out.println("Port must be an integer.");
+                    }
+                } else {
+                    System.out.println("No port provided.");
+                }
+                break;
+
+            case "#login":
+                try {
+                    openConnection();
+                    sendToServer("#login " + loginID);
+                } catch (IOException e) {
+                    System.out.println("Cannot open connection. Awaiting command.");
+                }
+                break;
+
+            case "#gethost":
+                System.out.println("Current host: " + getHost());
+                break;
+
+            case "#getport":
+                System.out.println("Current port: " + getPort());
+                break;
+
+            default:
+                System.out.println("Invalid command" + command);
+                break;
+        }
+    }
+
+    /**
+     * This method terminates the client.
+     */
+    public void quit() {
+        try {
+            closeConnection();
+        } catch (IOException e) {
+        }
+        System.exit(0);
+    }
+
+    @Override
+    protected void connectionClosed() {
+        System.out.println("Server has closed the connection. Exiting client.");
+        System.exit(0);
+    }
+
+    @Override
+    protected void connectionException(Exception e) {
+        System.out.println("Server has stopped responding. Exiting client.");
+        System.exit(0);
+    }
+
 }
-// ChatClient类结束
+

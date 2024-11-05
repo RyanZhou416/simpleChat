@@ -1,124 +1,117 @@
 package edu.seg2105.client.ui;
-// 本文件包含支持教科书第3.7节的材料：
-// "面向对象软件工程"，并根据www.lloseng.com上的开源许可证发布
-
-import java.io.*;
-import java.util.Scanner;
+// This file contains material supporting section 3.7 of the textbook:
+// "Object Oriented Software Engineering" and is issued under the open-source
+// license found at www.lloseng.com
 
 import edu.seg2105.client.backend.ChatClient;
-import edu.seg2105.client.common.*;
+import edu.seg2105.client.common.ChatIF;
+
+import java.io.IOException;
+import java.util.Scanner;
 
 /**
- * 这个类构建了一个聊天客户端的UI。它实现了
- * 聊天接口以激活display()方法。
- * 警告：这里的一些代码在ServerConsole中被克隆
+ * This class constructs the UI for a chat client.  It implements the
+ * chat interface in order to activate the display() method.
+ * Warning: Some of the code here is cloned in ServerConsole
  *
- * 作者 Fran&ccedil;ois B&eacute;langer
- * 作者 Dr Timothy C. Lethbridge  
- * 作者 Dr Robert Lagani&egrave;re
+ * @author Fran&ccedil;ois B&eacute;langer
+ * @author Dr Timothy C. Lethbridge
+ * @author Dr Robert Lagani&egrave;re
  */
-public class ClientConsole implements ChatIF 
-{
-  //类变量 *************************************************
-  
-  /**
-   * 默认连接端口。
-   */
-  final public static int DEFAULT_PORT = 5555;
-  
-  //实例变量 **********************************************
-  
-  /**
-   * 创建此ConsoleChat的客户端实例。
-   */
-  ChatClient client;
-  
-  /**
-   * 从控制台读取的扫描器
-   */
-  Scanner fromConsole; 
+public class ClientConsole implements ChatIF {
+    //Class variables *************************************************
 
-  //构造函数 ****************************************************
+    /**
+     * The default port to connect on.
+     */
+    final public static int DEFAULT_PORT = 5555;
 
-  /**
-   * 构造ClientConsole UI的实例。
-   *
-   * @param host 要连接的主机。
-   * @param port 要连接的端口。
-   */
-  public ClientConsole(String host, int port) 
-  {
-    try 
-    {
-      client= new ChatClient(host, port, this);
-    } 
-    catch(IOException exception) 
-    {
-      System.out.println("错误：无法建立连接！"
-                + " 终止客户端。");
-      System.exit(1);
+    //Instance variables **********************************************
+
+    /**
+     * The instance of the client that created this ConsoleChat.
+     */
+    ChatClient client;
+
+    /**
+     * Scanner to read from the console
+     */
+    Scanner fromConsole;
+
+    //Constructors ****************************************************
+
+    /**
+     * Constructs an instance of the ClientConsole UI.
+     *
+     * @param host The host to connect to.
+     * @param port The port to connect on.
+     */
+    public ClientConsole(String host, int port, String loginID) {
+        try {
+            client = new ChatClient(host, port, this,loginID);
+        } catch (IOException exception) {
+            System.out.println("Error: Can't setup connection!"
+                    + " Terminating client.");
+            System.exit(1);
+        }
+
+        // Create scanner object to read from console
+        fromConsole = new Scanner(System.in);
     }
-    
-    // 创建扫描器对象以从控制台读取
-    fromConsole = new Scanner(System.in); 
-  }
 
-  //实例方法 ************************************************
-  
-  /**
-   * 该方法等待来自控制台的输入。一旦收到，
-   * 它将其发送到客户端的消息处理程序。
-   */
-  public void accept() 
-  {
-    try
-    {
-      String message;
+    //Instance methods ************************************************
 
-      while (true) 
-      {
-        message = fromConsole.nextLine();
-        client.handleMessageFromClientUI(message);
-      }
-    } 
-    catch (Exception ex) 
-    {
-      System.out.println("从控制台读取时发生意外错误！");
+    /**
+     * This method waits for input from the console.  Once it is
+     * received, it sends it to the client's message handler.
+     */
+    public void accept() {
+        try {
+            String message;
+
+            while (true) {
+                message = fromConsole.nextLine();
+                client.handleMessageFromClientUI(message);
+            }
+        } catch (Exception ex) {
+            System.out.println("Unexpected error while reading from console!");
+        }
     }
-  }
 
-  /**
-   * 该方法覆盖了ChatIF接口中的方法。它
-   * 在屏幕上显示一条消息。
-   *
-   * @param message 要显示的字符串。
-   */
-  public void display(String message) 
-  {
-    System.out.println("> " + message);
-  }
-
-  //类方法 ***************************************************
-  
-  /*
-   * 该方法负责创建客户端UI。
-   *
-   * @param args[0] 要连接的主机。
-   */
-  public static void main(String[] args) 
-  {
-    String host = "";
-
-    try
-    {
-      host = args[0];
+    /**
+     * This method overrides the method in the ChatIF interface.  It
+     * displays a message onto the screen.
+     *
+     * @param message The string to be displayed.
+     */
+    public void display(String message) {
+        System.out.println("> " + message);
     }
-    catch(ArrayIndexOutOfBoundsException e)
-    {
-      host = "localhost";
+
+    //Class methods ***************************************************
+
+    /**
+     * This method is responsible for the creation of the Client UI.
+     *
+     * @param args The host to connect to.
+     */
+    public static void main(String[] args) {
+        String loginId = "";
+        String host = "";
+        int port = 0;
+        try {
+            loginId = args[0];
+            host = args[1];
+            port = Integer.parseInt(args[2]);
+        } catch (ArrayIndexOutOfBoundsException e) {
+            host = "localhost";
+            port = DEFAULT_PORT;
+        } catch (NumberFormatException ne) {
+            port = DEFAULT_PORT;
+        }
+        System.out.println("Usage: java ClientConsole [host]: "+host+" [port]: "+port);
+        ClientConsole chat = new ClientConsole(host, DEFAULT_PORT, loginId);
+        chat.accept();
     }
-    ClientConsole chat= new ClientConsole(host, DEFAULT_PORT);
-    chat.accept();  //等待控制台数据
-  }
 }
-// ConsoleChat类结束
+
