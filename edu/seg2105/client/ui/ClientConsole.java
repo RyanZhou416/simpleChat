@@ -50,9 +50,9 @@ public class ClientConsole implements ChatIF {
         try {
             client = new ChatClient(host, port, this,loginID);
         } catch (IOException exception) {
-            System.out.println("Error: Can't setup connection!"
-                    + " Terminating client.");
-            System.exit(1);
+            System.out.println("Error: Can't setup connection! Terminating client.");
+            throw new RuntimeException(exception);
+            //System.exit(1);
         }
 
         // Create scanner object to read from console
@@ -85,7 +85,7 @@ public class ClientConsole implements ChatIF {
      * @param message The string to be displayed.
      */
     public void display(String message) {
-        System.out.println("> " + message);
+        System.out.println(message);
     }
 
     //Class methods ***************************************************
@@ -96,9 +96,17 @@ public class ClientConsole implements ChatIF {
      * @param args The host to connect to.
      */
     public static void main(String[] args) {
-        String loginId = "";
-        String host = "";
+        String loginId="";
+        String host = "localhost";
         int port = 0;
+        if (args.length == 0) {
+            System.out.println("ERROR - No login ID specified. Connection aborted.");
+            return;
+        }else if(args.length == 1){
+            loginId = args[0];
+            System.out.println("ERROR - Can't setup connection! Terminating client.");
+            return;
+        }
         try {
             loginId = args[0];
             host = args[1];
@@ -109,7 +117,7 @@ public class ClientConsole implements ChatIF {
         } catch (NumberFormatException ne) {
             port = DEFAULT_PORT;
         }
-        System.out.println("Usage: java ClientConsole [host]: "+host+" [port]: "+port);
+        System.out.println("Usage: java ClientConsole [host]: "+host+" [port]: "+port+" [loginID]: "+loginId);
         ClientConsole chat = new ClientConsole(host, DEFAULT_PORT, loginId);
         chat.accept();
     }

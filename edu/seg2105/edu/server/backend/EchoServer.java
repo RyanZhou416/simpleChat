@@ -25,7 +25,7 @@ public class EchoServer extends AbstractServer {
     /**
      * The default port to listen on.
      */
-    final public static int DEFAULT_PORT = 5555;
+    final public static int DEFAULT_PORT = 1269;
 
     //Constructors ****************************************************
 
@@ -49,6 +49,9 @@ public class EchoServer extends AbstractServer {
      */
     public void handleMessageFromClient
     (Object msg, ConnectionToClient client) {
+
+            System.out.println("Message received: " + msg+ " from " + client.getInfo("loginID"));
+
         if (msg.toString().startsWith("#login")) {
             if(client.getInfo("loginID") != null){
                 try {
@@ -58,9 +61,7 @@ public class EchoServer extends AbstractServer {
                 }
             }else{
             client.setInfo("loginID", msg.toString().substring(7));}
-        } else {
-            System.out.println("Message received: " + msg + " from " + client);
-            this.sendToAllClients(msg);
+            System.out.println(client.getInfo("loginID") + " has logged in");
         }
     }
 
@@ -83,12 +84,12 @@ public class EchoServer extends AbstractServer {
     }
 
     protected void clientConnected(ConnectionToClient client) {
-        System.out.println("Client connected: " + client.getInfo("loginID"));
+        System.out.println("A new client has connected to the server.");
     }
 
     protected void clientDisconnected(
             ConnectionToClient client) {
-        System.out.println("Client disconnected: " + client.getInfo("loginID"));
+        System.out.println(client.getInfo("loginID")+" has disconnected");
     }
 
     //Class methods ***************************************************
@@ -145,20 +146,25 @@ public class EchoServer extends AbstractServer {
                 try {
                     close();
                 } catch (IOException e) {
-                    System.out.println("无法关闭服务器。");
+                    System.out.println("Could not close server.");
                 }
                 break;
 
             case "#setport":
                 if (argument != null) {
                     try {
-                        int port = Integer.parseInt(argument); // 尝试将参数解析为整数
+                        int port = Integer.parseInt(argument);
                         setPort(port);
+                        close();
+                        listen();
+                        serverStarted();
                     } catch (NumberFormatException e) {
-                        System.out.println("错误：端口号必须是一个整数。");
+                        System.out.println("Error: Port number must be an integer.");
+                    }catch (IOException e) {
+                        System.out.println("Error: Could not close server.");
                     }
                 } else {
-                    System.out.println("错误：缺少端口号参数。");
+                    System.out.println("Error: No port number provided.");
                 }
                 break;
 
@@ -167,19 +173,19 @@ public class EchoServer extends AbstractServer {
                     try {
                         listen();
                     } catch (IOException e) {
-                        System.out.println("无法开始监听。");
+                        System.out.println("Could not listen for clients.");
                     }
                 } else {
-                    System.out.println("服务器已经在监听。");
+                    System.out.println("Server is already listening for clients.");
                 }
                 break;
 
             case "#getport":
-                System.out.println("当前端口号：" + getPort());
+                System.out.println("Current port: " + getPort());
                 break;
 
             default:
-                System.out.println("无效的命令：" + command);
+                System.out.println("Invalid command: " + command);
                 break;
         }
     }

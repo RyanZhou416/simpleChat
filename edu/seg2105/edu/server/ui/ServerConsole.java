@@ -26,8 +26,8 @@ public class ServerConsole implements ChatIF {
 
 
     /**
-     * 当被重写时，该方法用于在UI上显示对象。
-     *
+     * This method waits for input from the console. Once it is
+     * received, it sends it to the server's message handler.
      * @param message
      */
     @Override
@@ -46,7 +46,7 @@ public class ServerConsole implements ChatIF {
 
             }
         } catch (Exception ex) {
-            System.out.println("从控制台读取时发生意外错误！");
+            System.out.println("Unexpected error while reading from console!");
         }
     }
 }

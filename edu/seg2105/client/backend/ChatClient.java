@@ -18,6 +18,8 @@ import java.io.IOException;
  * @author Fran&ccedil;ois B&eacute;langer
  */
 public class ChatClient extends AbstractClient {
+
+
     //Instance variables **********************************************
     String loginID;
     /**
@@ -32,8 +34,8 @@ public class ChatClient extends AbstractClient {
     /**
      * Constructs an instance of the chat client.
      *
-     * @param host The server to connect to.
-     * @param port The port number to connect on.
+     * @param host     The server to connect to.
+     * @param port     The port number to connect on.
      * @param clientUI The interface type variable.
      */
 
@@ -41,11 +43,11 @@ public class ChatClient extends AbstractClient {
             throws IOException {
 
         super(host, port);
-        this.loginID=loginID;
+        this.loginID = loginID;
         this.clientUI = clientUI;
         openConnection();
         sendToServer("#login " + loginID);
-
+        System.out.println(loginID + " has logged on.");
     }
 
 
@@ -73,10 +75,10 @@ public class ChatClient extends AbstractClient {
                 handleCommand(message);
             } else {
                 sendToServer(message);
+                clientUI.display(loginID + "> " + message);
             }
         } catch (IOException e) {
-            clientUI.display
-                    ("Could not send message to server.  Terminating client.");
+            clientUI.display("Could not send message to server.  Terminating client.");
             quit();
         }
     }
@@ -111,6 +113,12 @@ public class ChatClient extends AbstractClient {
                     try {
                         int port = Integer.parseInt(argument);
                         setPort(port);
+                        try {
+                            closeConnection();
+                            openConnection();
+                        } catch (IOException e) {
+                            System.out.println("Cannot open connection. Awaiting command.");
+                        }
                     } catch (NumberFormatException e) {
                         System.out.println("Port must be an integer.");
                     }
@@ -155,7 +163,7 @@ public class ChatClient extends AbstractClient {
 
     @Override
     protected void connectionClosed() {
-        System.out.println("Server has closed the connection. Exiting client.");
+        System.out.println("The connection has been closed.");
         System.exit(0);
     }
 
@@ -163,6 +171,10 @@ public class ChatClient extends AbstractClient {
     protected void connectionException(Exception e) {
         System.out.println("Server has stopped responding. Exiting client.");
         System.exit(0);
+    }
+
+    public String getLoginID() {
+        return loginID;
     }
 
 }
