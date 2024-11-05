@@ -44,23 +44,24 @@ public class EchoServer extends AbstractServer {
     /**
      * This method handles any messages received from the client.
      *
-     * @param msg The message received from the client.
+     * @param msg    The message received from the client.
      * @param client The connection from which the message originated.
      */
     public void handleMessageFromClient
     (Object msg, ConnectionToClient client) {
 
-            System.out.println("Message received: " + msg+ " from " + client.getInfo("loginID"));
+        System.out.println("Message received: " + msg + " from " + client.getInfo("loginID"));
 
         if (msg.toString().startsWith("#login")) {
-            if(client.getInfo("loginID") != null){
+            if (client.getInfo("loginID") != null) {
                 try {
                     client.close();
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-            }else{
-            client.setInfo("loginID", msg.toString().substring(7));}
+            } else {
+                client.setInfo("loginID", msg.toString().substring(7));
+            }
             System.out.println(client.getInfo("loginID") + " has logged in");
         }
     }
@@ -89,7 +90,7 @@ public class EchoServer extends AbstractServer {
 
     protected void clientDisconnected(
             ConnectionToClient client) {
-        System.out.println(client.getInfo("loginID")+" has disconnected");
+        System.out.println(client.getInfo("loginID") + " has disconnected");
     }
 
     //Class methods ***************************************************
@@ -99,7 +100,7 @@ public class EchoServer extends AbstractServer {
      * the server instance (there is no UI in this phase).
      *
      * @param args The port number to listen on.  Defaults to 5555
-     *          if no argument is entered.
+     *             if no argument is entered.
      */
     public static void main(String[] args) {
         int port = 0;
@@ -152,19 +153,24 @@ public class EchoServer extends AbstractServer {
 
             case "#setport":
                 if (argument != null) {
+                    setPort(Integer.parseInt(argument));
+                    stopListening();
+                } else {
+                    System.out.println("No port provided.");
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                if (!isListening()) {
                     try {
-                        int port = Integer.parseInt(argument);
-                        setPort(port);
-                        close();
                         listen();
-                        serverStarted();
-                    } catch (NumberFormatException e) {
-                        System.out.println("Error: Port number must be an integer.");
-                    }catch (IOException e) {
-                        System.out.println("Error: Could not close server.");
+                    } catch (IOException e) {
+                        System.out.println("Could not listen for clients.");
                     }
                 } else {
-                    System.out.println("Error: No port number provided.");
+                    System.out.println("Server is already listening for clients.");
                 }
                 break;
 
